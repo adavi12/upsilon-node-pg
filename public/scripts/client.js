@@ -31,14 +31,14 @@ function displayBooks(books) {
     // <input type="text" name="title" value="Infinite Jest" />
     $form.append('<input type="text" name="title" value="' + book.title + '"/>');
     $form.append('<input type="text" name="author" value="' + book.author + '"/>');
-
+    // ISO format: yyyy-mm-ddThh-mm-ssZ
+    // desired format:  yyyy-mm-dd
     var date = new Date(book.publication_date).toISOString().slice(0,10);
 
     $form.append('<input type="date" name="published" value="' + date + '"/>');
     $form.append('<input type="text" id="editionNum" name="edition" value ="'+ book.edition + '"/>');
     $form.append('<input type="text" id="publisherCo" name="publisher" value ="'+ book.publisher + '"/>');
-    // ISO format: yyyy-mm-ddThh-mm-ssZ
-    // desired format:  yyyy-mm-dd
+
 
 
 
