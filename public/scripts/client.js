@@ -6,6 +6,8 @@ $(function(){
 
   // listen for a submit event on the form
   $('#book-form').on('submit', addBook);
+  $('#book-list').on('click', '.save', updateBook);
+  $('#book-list').on('click', '.delete', deleteBook);
 });
 
 function getBooks() {
@@ -24,12 +26,31 @@ function displayBooks(books) {
   books.forEach(function(book){
     var $li = $('<li></li>');
 
-    $li.append('<p><strong>' + book.title + '</strong></p>');
-    $li.append('<p><em>' + book.author + '</em></p>');
+    var $form = $('<form></form>');
 
-    var date = new Date(book.publication_date).toDateString();
-    $li.append('<p><time>' + date + '</time></p>');
+    // <input type="text" name="title" value="Infinite Jest" />
+    $form.append('<input type="text" name="title" value="' + book.title + '"/>');
+    $form.append('<input type="text" name="author" value="' + book.author + '"/>');
 
+    var date = new Date(book.publication_date).toISOString().slice(0,10);
+
+    $form.append('<input type="date" name="published" value="' + date + '"/>');
+    $form.append('<input type="text" id="editionNum" name="edition" value ="'+ book.edition + '"/>');
+    $form.append('<input type="text" id="publisherCo" name="publisher" value ="'+ book.publisher + '"/>');
+    // ISO format: yyyy-mm-ddThh-mm-ssZ
+    // desired format:  yyyy-mm-dd
+
+
+
+    var $saveButton = $('<button class="save">Save!</button>');
+    $saveButton.data('id', book.id);
+    $form.append($saveButton);
+
+    var $deleteButton = $('<button class="delete">Delete!</button>');
+    $deleteButton.data('id', book.id);
+    $form.append($deleteButton);
+
+    $li.append($form);
     $('#book-list').append($li);
   });
 }
@@ -48,5 +69,31 @@ function addBook(event) {
     data: formData,
     success: getBooks
   });
+}
 
+function updateBook(event) {
+  event.preventDefault();
+
+  var $button = $(this);
+  var $form = $button.closest('form');
+
+  var data = $form.serialize();
+
+  $.ajax({
+    url: '/books/' + $button.data('id'),
+    type: 'PUT',
+    data: data,
+    success: getBooks
+  });
+}
+
+function deleteBook(event) {
+  event.preventDefault();
+
+  // $(this) refers to the button that was clicked
+  $.ajax({
+    url: '/books/' + $(this).data('id'),
+    type: 'DELETE',
+    success: getBooks
+  });
 }

@@ -3,7 +3,7 @@ var router = express.Router();
 
 var pg = require("pg");
 
-var config = { database: "library" };
+var config = { database: "node-pg-library" };
 
 // initialize connection Pool
 // think of as 'how I connect to DB'
@@ -57,8 +57,8 @@ router.post("/", function(req, res) {
       // 3. callback - function to run after the database gives us our result
       //               takes an error object and the result object as it's args
       client.query(
-        "INSERT INTO books (title, author, publication_date) VALUES ($1, $2, $3) RETURNING *;",
-        [ req.body.title, req.body.author, req.body.published ],
+        "INSERT INTO books (title, author, publication_date, edition, publisher) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
+        [ req.body.title, req.body.author, req.body.published, req.body.edition, req.body.publisher],
         function(err, result) {
           done();
           if (err) {
@@ -74,4 +74,48 @@ router.post("/", function(req, res) {
   });
 });
 
-module.exports = router;
+// localhost:3000/books/4
+// req.params.id === '4'
+router.put('/:id', function(req, res){
+  pool.connect(function(err, client, done){
+    if (err) {
+      console.log('Error connecting to DB', err);
+      res.sendStatus(500);
+      done();
+    } else {
+      client.query('UPDATE books SET title=$2, author=$3, publication_date=$4, editon =$5, publisher= $6 WHERE id = $1 RETURNING *',
+                   [req.params.id, req.body.title, req.body.author, req.body.published, req.body.edition, req.body.publisher],
+                   function(err, result){
+                     done();
+                     if (err) {
+                       console.log('Error updating book', err);
+                       res.sendStatus(500);
+                     } else {
+                       res.send(result.rows);
+                     }
+                   });
+    }
+  });
+});
+
+router.delete('/:id', function(req, res){
+  pool.connect(function(err, client, done){
+    if (err) {
+      console.log('Error connecting to DB', err);
+      res.sendStatus(500);
+      done();
+    } else {
+      client.query('DELETE FROM books WHERE id = $1',
+                   [req.params.id],
+                   function(err, result){
+                     done();
+                     if (err) {
+                       console.log('Error deleting book', err);
+                       res.sendStatus(500);
+                     } else {
+                       res.sendStatus(204);
+                     }
+                   });
+    }
+  });
+});
